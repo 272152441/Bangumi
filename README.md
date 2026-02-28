@@ -1,0 +1,2 @@
+# Bangumi
+Bangumi app learn
