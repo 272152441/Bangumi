@@ -57,10 +57,13 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.logging)
     implementation(libs.kotlinx.serialization.json)
 
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.material.icons.core)
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)
 
