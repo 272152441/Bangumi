@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.zxwork.bmg.data.model.CalendarModel
+import com.zxwork.bmg.data.model.SubjectModel
+import com.zxwork.bmg.data.model.SubjectType
 import com.zxwork.bmg.ui.theme.BmgTheme
 
 @Composable
@@ -81,10 +83,25 @@ fun HomeScreenContent(
                     )
                 }
                 else -> {
-                    CalendarList(
-                        calendars = uiState.calendars,
-                        onItemClick = { onIntent(HomeIntent.OnItemClick(it)) }
-                    )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        item {
+                            CalendarList(
+                                calendars = uiState.calendars,
+                                onItemClick = { onIntent(HomeIntent.OnItemClick(it)) }
+                            )
+                        }
+                        items(uiState.subjectSections) { section ->
+                            SubjectSection(
+                                section = section,
+                                onItemClick = { onIntent(HomeIntent.OnItemClick(it)) },
+                                onMoreClick = { /* TODO: navigate to subject list by type */ }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -103,6 +120,107 @@ fun CalendarList(
     ) {
         items(calendars) { calendar ->
             CalendarSection(calendar = calendar, onItemClick = onItemClick)
+        }
+    }
+}
+
+@Composable
+fun SubjectSection(
+    section: SubjectSection,
+    onItemClick: (Int) -> Unit,
+    onMoreClick: () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(4.dp, 18.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = subjectTypeLabel(section.type),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            TextButton(onClick = onMoreClick) {
+                Text(text = "查看更多", color = MaterialTheme.colorScheme.primary)
+            }
+        }
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp)
+        ) {
+            items(section.items) { item ->
+                SubjectItemCard(item = item, onItemClick = onItemClick)
+            }
+        }
+    }
+}
+
+private fun subjectTypeLabel(type: SubjectType): String = when (type) {
+    SubjectType.BOOK -> "书籍"
+    SubjectType.ANIME -> "动画"
+    SubjectType.MUSIC -> "音乐"
+    SubjectType.GAME -> "游戏"
+    SubjectType.REAL -> "三次元"
+}
+
+@Composable
+fun SubjectItemCard(
+    item: SubjectModel.Item,
+    onItemClick: (Int) -> Unit
+) {
+    val cornerShape = RoundedCornerShape(10.dp)
+    Card(
+        modifier = Modifier
+            .width(130.dp)
+            .clip(cornerShape)
+            .clickable { item.id?.let(onItemClick) }
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), cornerShape),
+        shape = cornerShape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column {
+            AsyncImage(
+                model = item.images?.common?.replace("http://", "https://"),
+                contentDescription = item.nameCn?.ifEmpty { item.name ?: "" } ?: item.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(bottomStart = 6.dp, bottomEnd = 6.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = item.nameCn?.takeIf { it.isNotEmpty() } ?: item.name ?: "",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    minLines = 2,
+                    lineHeight = 16.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                val sub = item.platform ?: item.date
+                if (!sub.isNullOrEmpty()) {
+                    Text(
+                        text = sub,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 10.sp
+                    )
+                }
+            }
         }
     }
 }

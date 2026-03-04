@@ -6,12 +6,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PageResponse<T>(
     @SerialName("data")
-    val data: List<T>,
+    val data: List<T>? = null,
     @SerialName("total")
-    val total: Int? = null,
+    val total: Int,
     @SerialName("limit")
-    val limit: Int? = null,
+    val limit: Int,
     @SerialName("offset")
-    val offset: Int? = null
+    val offset: Int
 )
 
