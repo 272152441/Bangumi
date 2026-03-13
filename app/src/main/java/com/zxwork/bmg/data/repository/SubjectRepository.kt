@@ -14,7 +14,12 @@ interface SubjectRepository {
         type: Int,
         cat: Int,
         limit: Int,
-        offset: Int
+        offset: Int,
+        sort: String? = null,
+        year: Int? = null,
+        month: Int? = null,
+        platform: String? = null,
+        series: Boolean? = null,
     ): NetworkResult<PageResponse<SubjectModel.Item>>
 
 }
@@ -27,13 +32,22 @@ class SubjectRepositoryImpl @Inject constructor(
         type: Int,
         cat: Int,
         limit: Int,
-        offset: Int
+        offset: Int,
+        sort: String?,
+        year: Int?,
+        month: Int?,
+        platform: String?,
+        series: Boolean?
     ): NetworkResult<PageResponse<SubjectModel.Item>> {
         return client.getResult("v0/subjects") {
             parameter("type", type)
             parameter("cat", cat)
             parameter("limit", limit)
             parameter("offset", offset)
+            parameter("sort", sort)
+            parameter("year", year)
+            parameter("month", month)
+            parameter("platform", platform)
         }
     }
 }

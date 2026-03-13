@@ -9,6 +9,14 @@ val BmgPinkDark = Color(0xFFD87093)
 
 val SkyBlue = Color(0xFF87CEEB)
 val MintGreen = Color(0xFF98FB98)
+val BmgOrange = Color(0xFFFFA500) // 活力橙
+val BmgYellow = Color(0xFFFFD700) // 阳光黄
+val BmgWarmBg = Color(0xFFFFF7ED) // 暖色调背景底色 (橙色调)
+
+// P5 风格风格配色 (点缀使用)
+val P5Red = Color(0xFFD32F2F)
+val P5Black = Color(0xFF1A1A1A)
+val P5White = Color(0xFFF5F5F5)
 
 // 基础色
 val BackgroundLight = Color(0xFFFFF9FA) // 极其浅的粉色背景

@@ -1,4 +1,6 @@
 package com.zxwork.bmg.data.model
 
-class SortType {
+enum class SortType(val value: String) {
+    DATE("date"),
+    RANK("rank"),
 }

@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -17,6 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +34,12 @@ import coil3.compose.AsyncImage
 import com.zxwork.bmg.data.model.CalendarModel
 import com.zxwork.bmg.data.model.SubjectModel
 import com.zxwork.bmg.data.model.SubjectType
+import com.zxwork.bmg.ui.theme.BmgOrange
+import com.zxwork.bmg.ui.theme.BmgPink
+import com.zxwork.bmg.ui.theme.BmgPinkLight
 import com.zxwork.bmg.ui.theme.BmgTheme
+import com.zxwork.bmg.ui.theme.BmgWarmBg
+import com.zxwork.bmg.ui.theme.BmgYellow
 
 @Composable
 fun HomeScreen(
@@ -52,27 +62,14 @@ fun HomeScreenContent(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "每日放送",
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        }
+        containerColor = BmgWarmBg.copy(alpha = 0.5f) // 使用全局暖色背景
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             when {
                 uiState.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = MaterialTheme.colorScheme.primary
+                        color = BmgPink
                     )
                 }
                 uiState.error != null -> {
@@ -85,21 +82,33 @@ fun HomeScreenContent(
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                        contentPadding = PaddingValues(top = 20.dp, bottom = 40.dp),
+                        verticalArrangement = Arrangement.spacedBy(28.dp)
                     ) {
                         item {
-                            CalendarList(
-                                calendars = uiState.calendars,
-                                onItemClick = { onIntent(HomeIntent.OnItemClick(it)) }
+                            CuteHeader(title = "每日放送 ✨")
+                        }
+                        
+                        items(uiState.calendars) { calendar ->
+                            CalendarSection(calendar = calendar, onItemClick = { onIntent(HomeIntent.OnItemClick(it)) })
+                        }
+                        
+                        item {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                                thickness = 2.dp,
+                                color = BmgPink.copy(alpha = 0.1f)
                             )
                         }
+
                         items(uiState.subjectSections) { section ->
-                            SubjectSection(
-                                section = section,
-                                onItemClick = { onIntent(HomeIntent.OnItemClick(it)) },
-                                onMoreClick = { /* TODO: navigate to subject list by type */ }
-                            )
+                            if (section.items.isNotEmpty()) {
+                                SubjectSection(
+                                    section = section,
+                                    onItemClick = { onIntent(HomeIntent.OnItemClick(it)) },
+                                    onMoreClick = { /* TODO: navigate to subject list */ }
+                                )
+                            }
                         }
                     }
                 }
@@ -109,17 +118,28 @@ fun HomeScreenContent(
 }
 
 @Composable
-fun CalendarList(
-    calendars: List<CalendarModel>,
-    onItemClick: (Int) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+fun CuteHeader(title: String) {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
     ) {
-        items(calendars) { calendar ->
-            CalendarSection(calendar = calendar, onItemClick = onItemClick)
+        Surface(
+            color = BmgPink,
+            shape = RoundedCornerShape(topStart = 24.dp, bottomEnd = 24.dp, topEnd = 8.dp, bottomStart = 8.dp),
+            modifier = Modifier.shadow(6.dp, RoundedCornerShape(topStart = 24.dp, bottomEnd = 24.dp, topEnd = 8.dp, bottomStart = 8.dp))
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -130,34 +150,37 @@ fun SubjectSection(
     onItemClick: (Int) -> Unit,
     onMoreClick: () -> Unit
 ) {
-    Column {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // 甜甜圈形状的装饰
             Box(
                 modifier = Modifier
-                    .size(4.dp, 18.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.primary)
+                    .size(12.dp)
+                    .clip(CircleShape)
+                    .background(BmgOrange)
+                    .border(3.dp, BmgOrange.copy(alpha = 0.3f), CircleShape)
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = subjectTypeLabel(section.type),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = Color(0xFF5C4033) // 深巧克力暖色
             )
             Spacer(modifier = Modifier.weight(1f))
             TextButton(onClick = onMoreClick) {
-                Text(text = "查看更多", color = MaterialTheme.colorScheme.primary)
+                Text("更多 >", color = BmgPink, fontWeight = FontWeight.Bold)
             }
         }
+        
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp)
         ) {
             items(section.items) { item ->
                 SubjectItemCard(item = item, onItemClick = onItemClick)
@@ -167,11 +190,11 @@ fun SubjectSection(
 }
 
 private fun subjectTypeLabel(type: SubjectType): String = when (type) {
-    SubjectType.BOOK -> "书籍"
-    SubjectType.ANIME -> "动画"
-    SubjectType.MUSIC -> "音乐"
-    SubjectType.GAME -> "游戏"
-    SubjectType.REAL -> "三次元"
+    SubjectType.BOOK -> "书架上新"
+    SubjectType.ANIME -> "追番列表"
+    SubjectType.MUSIC -> "悦耳旋律"
+    SubjectType.GAME -> "游戏世界"
+    SubjectType.REAL -> "三次元剧"
 }
 
 @Composable
@@ -179,47 +202,91 @@ fun SubjectItemCard(
     item: SubjectModel.Item,
     onItemClick: (Int) -> Unit
 ) {
-    val cornerShape = RoundedCornerShape(10.dp)
+    val cardWidth = 160.dp
+    val cardHeight = 220.dp
+    val cornerShape = RoundedCornerShape(16.dp)
+    
     Card(
         modifier = Modifier
-            .width(130.dp)
-            .clip(cornerShape)
-            .clickable { item.id?.let(onItemClick) }
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), cornerShape),
+            .width(cardWidth)
+            .height(cardHeight)
+            .shadow(4.dp, cornerShape)
+            .clickable { item.id?.let(onItemClick) },
         shape = cornerShape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column {
-            AsyncImage(
-                model = item.images?.common?.replace("http://", "https://"),
-                contentDescription = item.nameCn?.ifEmpty { item.name ?: "" } ?: item.name,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(bottomStart = 6.dp, bottomEnd = 6.dp)),
-                contentScale = ContentScale.Crop
-            )
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text(
-                    text = item.nameCn?.takeIf { it.isNotEmpty() } ?: item.name ?: "",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    minLines = 2,
-                    lineHeight = 16.sp
+                    .aspectRatio(1f)
+            ) {
+                AsyncImage(
+                    model = item.images?.common?.replace("http://", "https://"),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                
+                // 顶部半透明遮罩 (可选，增加氛围感)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(30.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.2f))
+                            )
+                        )
+                )
+
+                // 平台标签
                 val sub = item.platform ?: item.date
                 if (!sub.isNullOrEmpty()) {
-                    Text(
-                        text = sub,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 10.sp
-                    )
+                    Surface(
+                        modifier = Modifier.padding(8.dp).align(Alignment.TopEnd),
+                        color = BmgPink.copy(alpha = 0.9f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = sub.take(4),
+                            fontSize = 9.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
                 }
+            }
+            
+            Column(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = item.nameCn?.ifEmpty { item.name ?: "" } ?: item.name ?: "",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    ),
+                    color = Color(0xFF4A4A4A),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                Text(
+                    text = item.name ?: "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 10.sp
+                )
             }
         }
     }
@@ -230,30 +297,36 @@ fun CalendarSection(
     calendar: CalendarModel,
     onItemClick: (Int) -> Unit
 ) {
-    Column {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier
-                .padding(start = 16.dp,end = 16.dp, bottom = 12.dp),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(4.dp, 18.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.primary)
-            )
+            Surface(
+                color = BmgPinkLight.copy(alpha = 0.3f),
+                shape = CircleShape
+            ) {
+                Text(
+                    text = calendar.weekday.cn,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    color = BmgPink,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 14.sp
+                )
+            }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = calendar.weekday.cn,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                text = "New Releases",
+                fontSize = 12.sp,
+                color = Color.LightGray,
+                fontWeight = FontWeight.Medium
             )
         }
+        
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp)
         ) {
             items(calendar.items) { item ->
                 CalendarItemCard(item = item, onItemClick = onItemClick)
@@ -267,63 +340,79 @@ fun CalendarItemCard(
     item: CalendarModel.Item,
     onItemClick: (Int) -> Unit
 ) {
-    val cornerShape = RoundedCornerShape(8.dp)
+    val cardWidth = 160.dp
+    val cardHeight = 220.dp
+    val cornerShape = RoundedCornerShape(16.dp)
     
     Card(
         modifier = Modifier
-            .width(130.dp)
-            .clip(cornerShape)
-            .clickable { onItemClick(item.id) }
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), cornerShape),
+            .width(cardWidth)
+            .height(cardHeight)
+            .shadow(4.dp, cornerShape)
+            .clickable { onItemClick(item.id) },
         shape = cornerShape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column {
-            Box {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+            ) {
                 AsyncImage(
                     model = item.images?.common?.replace("http://", "https://"),
-                    contentDescription = item.nameCn.ifEmpty { item.name },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp)),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                // 评分小标签
-                Surface(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.TopEnd),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = item.rating?.score?.toString() ?: "0.0",
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
+                
+                // 评分标签
+                val score = item.rating?.score ?: 0.0
+                if (score > 0) {
+                    Surface(
+                        modifier = Modifier.padding(8.dp).align(Alignment.BottomEnd),
+                        color = BmgYellow,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Icon(Icons.Default.Star, contentDescription = null, tint = Color.White, modifier = Modifier.size(10.dp))
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text(text = "$score", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                        }
+                    }
                 }
             }
-            Column(modifier = Modifier.padding(8.dp)) {
+            
+            Column(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center
+            ) {
                 Text(
                     text = item.nameCn.ifEmpty { item.name },
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    minLines = 2,
-                    lineHeight = 16.sp
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    ),
+                    color = Color(0xFF4A4A4A),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                
                 if (item.rank != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Rank #${item.rank}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontSize = 10.sp
+                        fontSize = 9.sp,
+                        color = BmgPink,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .background(BmgPink.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
             }
@@ -335,36 +424,8 @@ fun CalendarItemCard(
 @Composable
 fun HomeScreenPreview() {
     BmgTheme {
-        val mockItems = List(3) { i ->
-            CalendarModel.Item(
-                id = i,
-                name = "Anime $i",
-                nameCn = "动漫 $i",
-                airDate = "2024-01-01",
-                airWeekday = 1,
-                images = CalendarModel.Item.Images(
-                    common = "", grid = "", large = "", medium = "", small = ""
-                ),
-                rating = CalendarModel.Item.Rating(
-                    score = 8.5, total = 100,
-                    count = CalendarModel.Item.Rating.Count(0, 10, 2, 3, 4, 5, 6, 7, 8, 9)
-                ),
-                collection = CalendarModel.Item.Collection(doing = 100),
-                rank = i + 1,
-                summary = "",
-                type = 2,
-                url = ""
-            )
-        }
-        val mockCalendars = listOf(
-            CalendarModel(
-                weekday = CalendarModel.Weekday(cn = "星期一", en = "Mon", id = 1, ja = "月"),
-                items = mockItems
-            )
-        )
-
         HomeScreenContent(
-            uiState = HomeState(calendars = mockCalendars),
+            uiState = HomeState(),
             onIntent = {}
         )
     }

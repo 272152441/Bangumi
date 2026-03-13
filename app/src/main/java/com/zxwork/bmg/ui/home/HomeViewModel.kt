@@ -2,16 +2,26 @@ package com.zxwork.bmg.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.zxwork.bmg.data.repository.CalendarRepository
-import com.zxwork.bmg.data.repository.SubjectRepository
+import com.zxwork.bmg.data.model.SortType
+import com.zxwork.bmg.data.model.SubjectAnimeCategory
+import com.zxwork.bmg.data.model.SubjectBookCategory
+import com.zxwork.bmg.data.model.SubjectGameCategory
+import com.zxwork.bmg.data.model.SubjectRealCategory
 import com.zxwork.bmg.data.model.SubjectType
 import com.zxwork.bmg.data.network.NetworkResult
+import com.zxwork.bmg.data.repository.CalendarRepository
+import com.zxwork.bmg.data.repository.SubjectRepository
+import com.zxwork.bmg.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,7 +52,16 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val calendars = calendarRepository.getCalendars()
+                val todayId = LocalDate.now().dayOfWeek.value
+                val tomorrowId = if (todayId == 7) 1 else todayId + 1
+
+                val calendars = calendarRepository.getCalendars().filter { 
+                    it.weekday.id == todayId || it.weekday.id == tomorrowId 
+                }.sortedBy { 
+                    // 保证今天在前
+                    if (it.weekday.id == todayId) 0 else 1
+                }
+                
                 _uiState.update { it.copy(isLoading = false, calendars = calendars) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message ?: "Unknown error") }
@@ -60,25 +79,64 @@ class HomeViewModel @Inject constructor(
                 SubjectType.GAME,
                 SubjectType.REAL
             )
-            val sections = mutableListOf<SubjectSection>()
-            for (t in types) {
-                when (val res = subjectRepository.getSubjects(type = t.code, cat = 0, limit = 10, offset = 0)) {
+
+            val results = coroutineScope {
+                types.map { t ->
+                    async {
+
+                        val cateCode = when (t) {
+                            SubjectType.BOOK -> SubjectBookCategory.COMIC.code
+                            SubjectType.ANIME -> SubjectAnimeCategory.TV.code
+                            SubjectType.GAME -> SubjectGameCategory.GAME.code
+                            SubjectType.REAL -> SubjectRealCategory.JP_DRAMA.code
+                            else -> 0
+                        }
+
+
+                        val result = subjectRepository.getSubjects(
+                            type = t.code,
+                            cat = cateCode,
+                            limit = Constants.PAGE_SIZE,
+                            offset = Constants.PAGE_START,
+                            year = 2026,
+                            sort = SortType.RANK.value
+                        )
+                        t to result
+                    }
+                }.awaitAll()
+            }
+
+            val newSections = mutableListOf<SubjectSection>()
+            var errorMsg: String? = null
+
+            for ((type, result) in results) {
+                when (result) {
                     is NetworkResult.Success -> {
-                        val items = res.data.data ?: emptyList()
-                        sections.add(SubjectSection(type = t, items = items))
+                        val items = result.data.data ?: emptyList()
+                        newSections.add(SubjectSection(type = type, items = items))
                     }
+
                     is NetworkResult.HttpError -> {
-                        _uiState.update { it.copy(error = "Subjects ${t.name} http ${res.code}") }
+                        if (errorMsg == null) errorMsg = "Subjects ${type.name} http ${result.code}"
                     }
+
                     is NetworkResult.NetworkError -> {
-                        _uiState.update { it.copy(error = "Network error loading ${t.name}") }
+                        if (errorMsg == null) errorMsg = "Network error loading ${type.name}"
                     }
+
                     is NetworkResult.UnknownError -> {
-                        _uiState.update { it.copy(error = "Unknown error loading ${t.name}") }
+                        if (errorMsg == null) errorMsg = "Unknown error loading ${type.name}"
                     }
                 }
             }
-            _uiState.update { it.copy(isLoadingSubjects = false, subjectSections = sections) }
+
+            _uiState.update {
+                it.copy(
+                    isLoadingSubjects = false,
+                    subjectSections = newSections,
+                    error = errorMsg ?: it.error
+                )
+            }
         }
     }
 }
