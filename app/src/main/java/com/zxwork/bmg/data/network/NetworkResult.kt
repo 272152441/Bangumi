@@ -1,19 +1,9 @@
 package com.zxwork.bmg.data.network
 
+import com.zxwork.bmg.core.NetworkResult
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
-import io.ktor.http.HttpStatusCode
 import java.io.IOException
-
-sealed class NetworkResult<out T> {
-    data class Success<T>(val data: T) : NetworkResult<T>()
-    data class HttpError(
-        val code: Int,
-        val message: String? = null
-    ) : NetworkResult<Nothing>()
-    data class NetworkError(val exception: IOException) : NetworkResult<Nothing>()
-    data class UnknownError(val throwable: Throwable) : NetworkResult<Nothing>()
-}
 
 suspend inline fun <T> safeApiCall(crossinline block: suspend () -> T): NetworkResult<T> {
     return try {
@@ -28,4 +18,3 @@ suspend inline fun <T> safeApiCall(crossinline block: suspend () -> T): NetworkR
         NetworkResult.UnknownError(t)
     }
 }
-

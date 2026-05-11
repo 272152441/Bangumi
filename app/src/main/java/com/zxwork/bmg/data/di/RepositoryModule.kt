@@ -1,9 +1,9 @@
 package com.zxwork.bmg.data.di
 
-import com.zxwork.bmg.data.repository.CalendarRepository
-import com.zxwork.bmg.data.repository.CalendarRepositoryImpl
-import com.zxwork.bmg.data.repository.SubjectRepository
-import com.zxwork.bmg.data.repository.SubjectRepositoryImpl
+import com.zxwork.bmg.domain.repository.impl.CalendarRepositoryImpl
+import com.zxwork.bmg.domain.repository.impl.SubjectRepositoryImpl
+import com.zxwork.bmg.domain.repository.CalendarRepository
+import com.zxwork.bmg.domain.repository.SubjectRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

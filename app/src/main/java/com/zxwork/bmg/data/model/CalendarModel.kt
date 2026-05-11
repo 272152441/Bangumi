@@ -388,15 +388,15 @@ data class CalendarModel(
         @Serializable
         data class Images(
             @SerialName("common")
-            val common: String,
+            val common: String? = null,
             @SerialName("grid")
-            val grid: String,
+            val grid: String? = null,
             @SerialName("large")
-            val large: String,
+            val large: String? = null,
             @SerialName("medium")
-            val medium: String,
+            val medium: String? = null,
             @SerialName("small")
-            val small: String
+            val small: String? = null
         )
 
         @Serializable

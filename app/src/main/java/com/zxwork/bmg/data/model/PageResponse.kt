@@ -8,10 +8,10 @@ data class PageResponse<T>(
     @SerialName("data")
     val data: List<T>? = null,
     @SerialName("total")
-    val total: Int,
+    val total: Int = 0,
     @SerialName("limit")
-    val limit: Int,
+    val limit: Int = 0,
     @SerialName("offset")
-    val offset: Int
+    val offset: Int = 0
 )
 

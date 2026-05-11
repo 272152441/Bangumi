@@ -5,6 +5,7 @@ enum class SubjectBookCategory(val code: Int) {
     COMIC(1001),
     NOVEL(1002),
     ARTBOOK(1003);
+
     companion object {
         fun fromCode(code: Int): SubjectBookCategory? = values().firstOrNull { it.code == code }
     }

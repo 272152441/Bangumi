@@ -1,12 +1,12 @@
 package com.zxwork.bmg.ui.home
 
-import com.zxwork.bmg.data.model.CalendarModel
-import com.zxwork.bmg.data.model.SubjectModel
-import com.zxwork.bmg.data.model.SubjectType
+import com.zxwork.bmg.domain.model.Calendar
+import com.zxwork.bmg.domain.model.Subject
+import com.zxwork.bmg.domain.model.SubjectType
 
 data class HomeState(
     val isLoading: Boolean = false,
-    val calendars: List<CalendarModel> = emptyList(),
+    val calendars: List<Calendar> = emptyList(),
     val error: String? = null,
     val subjectSections: List<SubjectSection> = emptyList(),
     val isLoadingSubjects: Boolean = false
@@ -20,5 +20,5 @@ sealed interface HomeIntent {
 
 data class SubjectSection(
     val type: SubjectType,
-    val items: List<SubjectModel.Item>
+    val items: List<Subject>
 )

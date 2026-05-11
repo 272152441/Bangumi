@@ -6,6 +6,7 @@ enum class SubjectAnimeCategory(val code: Int) {
     OVA(2),
     MOVIE(3),
     WEB(5);
+
     companion object {
         fun fromCode(code: Int): SubjectAnimeCategory? = values().firstOrNull { it.code == code }
     }

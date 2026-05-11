@@ -9,6 +9,7 @@ enum class SubjectRealCategory(val code: Int) {
     FILM(6002),
     PERFORMANCE(6003),
     VARIETY(6004);
+
     companion object {
         fun fromCode(code: Int): SubjectRealCategory? = values().firstOrNull { it.code == code }
     }

@@ -6,33 +6,29 @@ import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class SubjectModel(
-    @SerialName("data")
-    val data: List<Item>
+    @SerialName("id")
+    val id: Int? = null,
+    @SerialName("type")
+    val type: Int? = null,
+    @SerialName("name")
+    val name: String? = null,
+    @SerialName("name_cn")
+    val nameCn: String? = null,
+    @SerialName("summary")
+    val summary: String? = null,
+    @SerialName("date")
+    val date: String? = null,
+    @SerialName("platform")
+    val platform: String? = null,
+    @SerialName("images")
+    val images: Images? = null,
+    @SerialName("tags")
+    val tags: List<Tag>? = null,
+    @SerialName("relation")
+    val relation: String? = null,
+    @SerialName("infobox")
+    val infobox: List<InfoBoxItem>? = null
 ) {
-    @Serializable
-    data class Item(
-        @SerialName("id")
-        val id: Int? = null,
-        @SerialName("type")
-        val type: Int? = null,
-        @SerialName("name")
-        val name: String? = null,
-        @SerialName("name_cn")
-        val nameCn: String? = null,
-        @SerialName("summary")
-        val summary: String? = null,
-        @SerialName("date")
-        val date: String? = null,
-        @SerialName("platform")
-        val platform: String? = null,
-        @SerialName("images")
-        val images: Images? = null,
-        @SerialName("tags")
-        val tags: List<Tag>? = null,
-        @SerialName("infobox")
-        val infobox: List<InfoBoxItem>? = null
-    )
-
     @Serializable
     data class Images(
         @SerialName("large")
